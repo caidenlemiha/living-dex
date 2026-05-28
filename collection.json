@@ -14,5 +14,14 @@
     "number": "126",
     "rarity": "Illustration Rare",
     "addedAt": 1779980025762
+  },
+  "644": {
+    "img": "https://assets.tcgdex.net/en/sv/sv10.5b/158/high.webp",
+    "cardName": "Zekrom ex",
+    "set": "Black Bolt",
+    "number": "158",
+    "rarity": "Ultra Rare",
+    "lang": "en",
+    "addedAt": 1779996434839
   }
 }
