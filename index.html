@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Living Dex — Full Art Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#f6f1e7; --paper-2:#efe7d6; --ink:#1f1b16; --ink-soft:#6b6258;
+    --line:#d8cdb8; --accent:#d8412f; --accent-deep:#a82a1d; --gold:#c9a24b;
+    --good:#2f8f5b; --amber:#c8841f; --slot:#ece3d2;
+    --shadow:0 1px 2px rgba(31,27,22,.08),0 8px 24px rgba(31,27,22,.10);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%,rgba(216,65,47,.06),transparent 60%),var(--paper);
+    color:var(--ink); font-family:"Hanken Grotesk",system-ui,sans-serif; -webkit-font-smoothing:antialiased; min-height:100vh;
+  }
+  /* Header */
+  header{position:sticky;top:0;z-index:40;background:rgba(246,241,231,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .bar{max-width:1280px;margin:0 auto;padding:14px 20px}
+  .toprow{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+  .logo{font-family:"Fraunces",serif;font-weight:900;font-size:26px;letter-spacing:-.5px;line-height:1;display:flex;align-items:center;gap:10px}
+  .logo .dot{width:16px;height:16px;border-radius:50%;background:var(--accent);box-shadow:inset 0 0 0 3px var(--paper),0 0 0 4px var(--accent)}
+  .sub{color:var(--ink-soft);font-size:13px}
+  .progress-wrap{margin-left:auto;min-width:240px}
+  .progress-top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+  .progress-top b{font-family:"Fraunces",serif;font-weight:900;font-size:15px}
+  .track{height:8px;background:var(--paper-2);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+  .fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--gold));transition:width .5s cubic-bezier(.2,.8,.2,1)}
+
+  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:14px}
+  .search{flex:1 1 240px;min-width:200px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:99px;padding:9px 14px;box-shadow:var(--shadow)}
+  .search input{border:none;outline:none;background:transparent;font:inherit;width:100%;color:var(--ink)}
+  .search svg{flex:none;opacity:.5}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line);background:#fff;color:var(--ink-soft);padding:7px 12px;border-radius:99px;font:600 13px "Hanken Grotesk";cursor:pointer;transition:all .15s;white-space:nowrap}
+  .chip:hover{border-color:var(--accent);color:var(--accent)}
+  .chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .chip.on.acc{background:var(--accent);border-color:var(--accent);color:#fff}
+  .seg{display:flex;background:#fff;border:1px solid var(--line);border-radius:99px;padding:3px;box-shadow:var(--shadow)}
+  .seg button{border:none;background:transparent;padding:6px 14px;border-radius:99px;font:600 13px "Hanken Grotesk";color:var(--ink-soft);cursor:pointer}
+  .seg button.on{background:var(--ink);color:var(--paper)}
+  .right-tools{display:flex;gap:10px;align-items:center;margin-left:auto}
+  .sizer{display:flex;align-items:center;gap:8px;color:var(--ink-soft);font-size:12px}
+  .sizer input{accent-color:var(--accent)}
+  .btn{border:none;cursor:pointer;font:700 14px "Hanken Grotesk";padding:10px 18px;border-radius:99px;display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;box-shadow:var(--shadow);transition:transform .12s,background .2s}
+  .btn:hover{background:var(--accent-deep);transform:translateY(-1px)}
+  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn.ghost:hover{border-color:var(--ink)}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+  /* sync pill */
+  .pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:#fff;border-radius:99px;padding:7px 13px;font:600 12px "Hanken Grotesk";cursor:pointer;color:var(--ink-soft);box-shadow:var(--shadow);white-space:nowrap}
+  .pill .led{width:8px;height:8px;border-radius:50%;background:var(--ink-soft);flex:none}
+  .pill[data-st="idle"] .led{background:var(--good)} .pill[data-st="idle"]{color:var(--good)}
+  .pill[data-st="saving"] .led{background:var(--amber);animation:pulse 1s infinite} .pill[data-st="saving"]{color:var(--amber)}
+  .pill[data-st="error"] .led{background:var(--accent)} .pill[data-st="error"]{color:var(--accent)}
+  .pill[data-st="read"] .led{background:#7a8aa0} .pill[data-st="read"]{color:#586b86}
+  .pill[data-st="local"] .led{background:var(--amber)} .pill[data-st="local"]{color:var(--amber)}
+  @keyframes pulse{50%{opacity:.35}}
+
+  /* Grid */
+  main{max-width:1280px;margin:0 auto;padding:26px 20px 90px}
+  .genhead{font-family:"Fraunces",serif;font-weight:900;font-size:18px;margin:30px 0 14px;display:flex;align-items:center;gap:12px}
+  .genhead:first-child{margin-top:0}
+  .genhead .meta{font-family:"Hanken Grotesk";font-weight:600;font-size:12px;color:var(--ink-soft);background:var(--paper-2);padding:3px 10px;border-radius:99px;border:1px solid var(--line)}
+  .genhead .rule{flex:1;height:1px;background:var(--line)}
+  .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(var(--card-w,180px),1fr))}
+  .card{position:relative;aspect-ratio:63/88;border-radius:var(--radius);cursor:pointer;transition:transform .18s}
+  .card:hover{transform:translateY(-4px)}
+  .card.have img{width:100%;height:100%;object-fit:cover;border-radius:var(--radius);box-shadow:var(--shadow);display:block}
+  .card.have:hover img{box-shadow:0 10px 30px rgba(31,27,22,.28)}
+  .card .num{position:absolute;top:8px;left:8px;z-index:2;font:700 11px "Hanken Grotesk";background:rgba(31,27,22,.7);color:var(--paper);padding:3px 8px;border-radius:99px;backdrop-filter:blur(4px)}
+  .card.miss{background:var(--slot);border:1px dashed var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;color:var(--ink-soft);box-shadow:inset 0 2px 8px rgba(31,27,22,.05)}
+  .card.miss:hover{border-color:var(--accent);color:var(--accent);background:#fff}
+  .card.miss .ball{width:46%;aspect-ratio:1;border-radius:50%;margin-bottom:10px;opacity:.35;background:linear-gradient(180deg,currentColor 0 calc(50% - 2px),#00000022 calc(50% - 2px) calc(50% + 2px),var(--slot) calc(50% + 2px) 100%);border:2px solid currentColor;position:relative}
+  .card.miss .ball::after{content:"";position:absolute;width:24%;aspect-ratio:1;border:2px solid currentColor;background:var(--slot);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%)}
+  .card.miss .nm{font-family:"Fraunces",serif;font-weight:600;font-size:14px;color:var(--ink);line-height:1.1}
+  .card.miss .add{margin-top:6px;font-size:11px;font-weight:700;opacity:.7}
+  .empty{text-align:center;padding:80px 20px;color:var(--ink-soft)}
+  .empty .big{font-family:"Fraunces",serif;font-size:22px;color:var(--ink);margin-bottom:6px}
+
+  /* Modal */
+  .overlay{position:fixed;inset:0;background:rgba(31,27,22,.5);backdrop-filter:blur(4px);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
+  .overlay.on{display:flex}
+  .modal{background:var(--paper);width:100%;max-width:760px;border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,.4);overflow:hidden;border:1px solid var(--line)}
+  .modal-head{padding:22px 24px 16px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .modal-head h2{font-family:"Fraunces",serif;font-weight:900;margin:0;font-size:22px}
+  .modal-head p{margin:4px 0 0;color:var(--ink-soft);font-size:13px}
+  .x{border:none;background:var(--paper-2);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:18px;color:var(--ink);flex:none}
+  .x:hover{background:var(--line)}
+  .modal-body{padding:20px 24px 26px}
+  .field-row{display:flex;gap:10px;flex-wrap:wrap}
+  .fld{display:flex;flex-direction:column;gap:5px}
+  .fld.grow{flex:1 1 240px}
+  .fld label{font-size:12px;font-weight:700;color:var(--ink-soft)}
+  .fld input{padding:11px 14px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;outline:none}
+  .fld input:focus{border-color:var(--accent)}
+  .ac{position:relative}
+  .ac-list{position:absolute;top:100%;left:0;right:0;z-index:5;background:#fff;border:1px solid var(--line);border-radius:10px;margin-top:4px;max-height:240px;overflow:auto;box-shadow:var(--shadow);display:none}
+  .ac-list.on{display:block}
+  .ac-list div{padding:9px 14px;cursor:pointer;font-size:14px;display:flex;gap:10px}
+  .ac-list div:hover,.ac-list div.hi{background:var(--paper-2)}
+  .ac-list .acnum{color:var(--ink-soft);font-weight:700;font-size:12px;min-width:46px}
+  .results{margin-top:20px;display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .res{cursor:pointer;border-radius:12px;transition:transform .15s}
+  .res:hover{transform:translateY(-3px)}
+  .res img{width:100%;border-radius:10px;box-shadow:var(--shadow);display:block}
+  .res .cap{font-size:11px;color:var(--ink-soft);margin-top:6px;line-height:1.3}
+  .res .cap b{color:var(--ink)}
+  .status-msg{text-align:center;color:var(--ink-soft);padding:30px 10px;font-size:14px}
+  .spinner{width:26px;height:26px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .detail{display:flex;gap:22px;flex-wrap:wrap}
+  .detail img{width:230px;max-width:100%;border-radius:12px;box-shadow:var(--shadow)}
+  .detail .info{flex:1 1 200px}
+  .detail .info h3{font-family:"Fraunces",serif;margin:0 0 4px;font-size:24px}
+  .detail dl{margin:14px 0;font-size:14px}
+  .detail dt{color:var(--ink-soft);font-size:12px;font-weight:700;margin-top:10px}
+  .detail dd{margin:2px 0 0}
+
+  .note{background:var(--paper-2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:13px;color:var(--ink-soft);line-height:1.5;margin-top:6px}
+  .note b{color:var(--ink)}
+  .note a{color:var(--accent);font-weight:600}
+  .steps{font-size:13px;color:var(--ink-soft);line-height:1.6;padding-left:18px;margin:10px 0 0}
+  .steps code{background:var(--paper-2);padding:1px 6px;border-radius:5px;font-size:12px;color:var(--ink)}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--paper);padding:12px 22px;border-radius:99px;font-weight:600;font-size:14px;box-shadow:var(--shadow);opacity:0;transition:all .3s;z-index:300;pointer-events:none}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (max-width:640px){.progress-wrap{margin-left:0;width:100%}.right-tools{width:100%}.sizer{display:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <div class="toprow">
+      <div>
+        <div class="logo"><span class="dot"></span> Living Dex</div>
+        <div class="sub">One full-art card per species</div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-top"><span>Caught</span><span><b id="pc">0</b> / <span id="pt">151</span></span></div>
+        <div class="track"><div class="fill" id="fill"></div></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <label class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+        <input id="q" placeholder="Search name or #number…" autocomplete="off" />
+      </label>
+      <div class="seg" id="statusSeg">
+        <button data-s="all" class="on">All</button>
+        <button data-s="have">Caught</button>
+        <button data-s="miss">Missing</button>
+      </div>
+      <div class="pill" id="syncPill" data-st="local"><span class="led"></span><span id="syncText">Local only</span></div>
+      <button class="btn" id="addBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+        Register card
+      </button>
+    </div>
+
+    <div class="controls" style="margin-top:10px;">
+      <div class="chips" id="genChips"></div>
+      <div class="right-tools">
+        <div class="sizer">Size <input type="range" id="sizer" min="120" max="260" value="180" step="10" /></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="main"></main>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h2 id="mTitle">Register a card</h2><p id="mSub"></p></div>
+      <button class="x" id="mClose">×</button>
+    </div>
+    <div class="modal-body" id="mBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   CONFIG — set these to your repo so the site auto-connects for viewers.
+   The TOKEN is NEVER put here — you paste it in the Connect panel and it
+   lives only in your browser. Repo can be public; viewing is read-only
+   without the token.
+   ===================================================================== */
+const GH_DEFAULTS = {
+  owner:  "",                 // e.g. "ashketchum"
+  repo:   "",                 // e.g. "living-dex"
+  branch: "main",
+  path:   "collection.json",
+};
+const TCG_API_KEY = "";       // optional pokemontcg.io key (works without)
+
+/* ---------- Generations by National Dex number ---------- */
+const GENS=[
+  {g:1,name:"Kanto",a:1,b:151},{g:2,name:"Johto",a:152,b:251},{g:3,name:"Hoenn",a:252,b:386},
+  {g:4,name:"Sinnoh",a:387,b:493},{g:5,name:"Unova",a:494,b:649},{g:6,name:"Kalos",a:650,b:721},
+  {g:7,name:"Alola",a:722,b:809},{g:8,name:"Galar",a:810,b:905},{g:9,name:"Paldea",a:906,b:1025},
+];
+const genOf=d=>(GENS.find(x=>d>=x.a&&d<=x.b)||{}).g||0;
+
+/* Gen-1 seed so the page renders instantly with no network. Full 1025
+   fetched from PokéAPI on load and cached. */
+const SEED="Bulbasaur Ivysaur Venusaur Charmander Charmeleon Charizard Squirtle Wartortle Blastoise Caterpie Metapod Butterfree Weedle Kakuna Beedrill Pidgey Pidgeotto Pidgeot Rattata Raticate Spearow Fearow Ekans Arbok Pikachu Raichu Sandshrew Sandslash Nidoran♀ Nidorina Nidoqueen Nidoran♂ Nidorino Nidoking Clefairy Clefable Vulpix Ninetales Jigglypuff Wigglytuff Zubat Golbat Oddish Gloom Vileplume Paras Parasect Venonat Venomoth Diglett Dugtrio Meowth Persian Psyduck Golduck Mankey Primeape Growlithe Arcanine Poliwag Poliwhirl Poliwrath Abra Kadabra Alakazam Machop Machoke Machamp Bellsprout Weepinbell Victreebel Tentacool Tentacruel Geodude Graveler Golem Ponyta Rapidash Slowpoke Slowbro Magnemite Magneton Farfetch'd Doduo Dodrio Seel Dewgong Grimer Muk Shellder Cloyster Gastly Haunter Gengar Onix Drowzee Hypno Krabby Kingler Voltorb Electrode Exeggcute Exeggutor Cubone Marowak Hitmonlee Hitmonchan Lickitung Koffing Weezing Rhyhorn Rhydon Chansey Tangela Kangaskhan Horsea Seadra Goldeen Seaking Staryu Starmie Scyther Jynx Electabuzz Magmar Pinsir Tauros Magikarp Gyarados Lapras Ditto Eevee Vaporeon Jolteon Flareon Porygon Omanyte Omastar Kabuto Kabutops Aerodactyl Snorlax Articuno Zapdos Moltres Dratini Dragonair Dragonite Mewtwo Mew".split(" ");
+
+/* =====================================================================
+   STORAGE / STATE
+   ===================================================================== */
+const LS={species:"pkdx_species_v2",cache:"pkdx_coll_cache_v1",gh:"pkdx_gh_v1"};
+let SPECIES=[], COLL=load(LS.cache,{}), ghSha=null;
+const filters={gen:"all",status:"all",q:""};
+function load(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
+function saveLS(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+
+/* ---------- GitHub config (defaults merged with saved settings) ---------- */
+function ghCfg(){ return Object.assign({},GH_DEFAULTS,load(LS.gh,{})); }
+function mode(){ const c=ghCfg(); if(c.owner&&c.repo){ return c.token?"edit":"read"; } return "local"; }
+function canEdit(){ return mode()!=="read"; }
+const b64e=s=>btoa(unescape(encodeURIComponent(s)));
+const b64d=s=>decodeURIComponent(escape(atob(String(s).replace(/\s/g,""))));
+function ghHeaders(write){ const c=ghCfg(); const h={"Accept":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"}; if(write)h["Content-Type"]="application/json"; if(c.token)h["Authorization"]="Bearer "+c.token; return h; }
+
+async function ghGet(){
+  const c=ghCfg();
+  const url=`https://api.github.com/repos/${c.owner}/${c.repo}/contents/${encodeURIComponent(c.path)}?ref=${encodeURIComponent(c.branch)}&t=${Date.now()}`;
+  const r=await fetch(url,{headers:ghHeaders(false),cache:"no-store"});
+  if(r.status===404) return {missing:true};
+  if(r.status===401||r.status===403) throw Object.assign(new Error("auth"),{auth:true});
+  if(!r.ok) throw new Error("GET "+r.status);
+  const j=await r.json();
+  let data={}; try{ data=JSON.parse(b64d(j.content)); }catch{ data={}; }
+  return {sha:j.sha,content:data};
+}
+async function ghPut(){
+  const c=ghCfg();
+  const url=`https://api.github.com/repos/${c.owner}/${c.repo}/contents/${encodeURIComponent(c.path)}`;
+  const body={message:`Update collection — ${Object.keys(COLL).length} caught`,content:b64e(JSON.stringify(COLL,null,2)),branch:c.branch};
+  if(ghSha) body.sha=ghSha;
+  let r=await fetch(url,{method:"PUT",headers:ghHeaders(true),body:JSON.stringify(body)});
+  if(r.status===409){ const g=await ghGet(); ghSha=g.missing?null:g.sha; body.sha=ghSha; r=await fetch(url,{method:"PUT",headers:ghHeaders(true),body:JSON.stringify(body)}); }
+  if(r.status===401||r.status===403) throw Object.assign(new Error("auth"),{auth:true});
+  if(!r.ok) throw new Error("PUT "+r.status);
+  const j=await r.json(); ghSha=j.content.sha;
+}
+
+/* ---------- write queue (debounced + serialized) ---------- */
+let writing=false,pendingWrite=false,saveTimer=null;
+function scheduleSave(){
+  saveLS(LS.cache,COLL);
+  if(mode()==="local"){ setSync("local"); return; }
+  if(mode()==="read") return;
+  clearTimeout(saveTimer); saveTimer=setTimeout(runSave,700);
+}
+async function runSave(){
+  if(writing){ pendingWrite=true; return; }
+  writing=true; setSync("saving");
+  try{ await ghPut(); setSync("idle"); }
+  catch(e){ setSync("error", e.auth?"Token rejected":"Save failed"); }
+  writing=false;
+  if(pendingWrite){ pendingWrite=false; runSave(); }
+}
+
+/* ---------- sync pill ---------- */
+const syncPill=document.getElementById("syncPill"), syncText=document.getElementById("syncText");
+function setSync(st,msg){
+  const labels={idle:"Synced",saving:"Saving…",error:msg||"Error",read:"Read-only",local:"Local only"};
+  syncPill.dataset.st=st; syncText.textContent=labels[st]||st;
+}
+syncPill.onclick=openSettings;
+
+/* =====================================================================
+   SPECIES LIST
+   ===================================================================== */
+function seedSpecies(){ return SEED.map((name,i)=>({dex:i+1,name,gen:genOf(i+1)})); }
+function clean(n){ return n.split("-").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ").replace("Nidoran F","Nidoran♀").replace("Nidoran M","Nidoran♂"); }
+async function loadSpecies(){
+  const cached=load(LS.species,null);
+  if(cached&&cached.length>=1000){ SPECIES=cached; return; }
+  SPECIES=seedSpecies(); render();
+  try{
+    const r=await fetch("https://pokeapi.co/api/v2/pokemon-species?limit=1025&offset=0");
+    const j=await r.json();
+    SPECIES=j.results.map((s,i)=>({dex:i+1,name:clean(s.name),gen:genOf(i+1)}));
+    saveLS(LS.species,SPECIES);
+  }catch(e){ console.warn("Species fetch blocked; using Gen-1 seed.",e); }
+}
+
+/* =====================================================================
+   RENDER
+   ===================================================================== */
+const main=document.getElementById("main");
+function visible(){
+  const q=filters.q.trim().toLowerCase(), numQ=q.replace("#","");
+  return SPECIES.filter(s=>{
+    if(filters.gen!=="all"&&s.gen!==+filters.gen) return false;
+    const have=!!COLL[s.dex];
+    if(filters.status==="have"&&!have) return false;
+    if(filters.status==="miss"&&have) return false;
+    if(q){ const byName=s.name.toLowerCase().includes(q); const byNum=String(s.dex)===numQ||String(s.dex).padStart(3,"0").includes(numQ); if(!byName&&!byNum) return false; }
+    return true;
+  });
+}
+function render(){
+  const list=visible();
+  const scope=filters.gen==="all"?SPECIES:SPECIES.filter(s=>s.gen===+filters.gen);
+  const caught=scope.filter(s=>COLL[s.dex]).length;
+  document.getElementById("pc").textContent=caught;
+  document.getElementById("pt").textContent=scope.length;
+  document.getElementById("fill").style.width=scope.length?(caught/scope.length*100)+"%":"0%";
+  if(!list.length){ main.innerHTML=`<div class="empty"><div class="big">Nothing here</div><div>No species match these filters.</div></div>`; return; }
+  let html="",cur=null;
+  for(const s of list){
+    if(s.gen!==cur){
+      cur=s.gen; const meta=GENS.find(g=>g.g===cur); const inGen=list.filter(x=>x.gen===cur); const have=inGen.filter(x=>COLL[x.dex]).length;
+      if(cur!==list[0].gen) html+=`</div>`;
+      html+=`<div class="genhead">Gen ${cur} · ${meta?meta.name:""} <span class="meta">${have}/${inGen.length}</span><span class="rule"></span></div><div class="grid">`;
+    }
+    const c=COLL[s.dex], num="#"+String(s.dex).padStart(3,"0");
+    if(c) html+=`<div class="card have" data-dex="${s.dex}"><span class="num">${num}</span><img loading="lazy" src="${c.img}" alt="${s.name}"></div>`;
+    else html+=`<div class="card miss" data-dex="${s.dex}"><span class="num">${num}</span><div class="ball"></div><div class="nm">${s.name}</div><div class="add">+ register</div></div>`;
+  }
+  html+=`</div>`;
+  main.innerHTML=html;
+  main.querySelectorAll(".card").forEach(el=>el.onclick=()=>openCard(+el.dataset.dex));
+}
+
+/* =====================================================================
+   CONTROLS
+   ===================================================================== */
+const genChips=document.getElementById("genChips");
+genChips.innerHTML=`<button class="chip on acc" data-g="all">All gens</button>`+GENS.map(g=>`<button class="chip" data-g="${g.g}">Gen ${g.g}</button>`).join("");
+genChips.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{filters.gen=c.dataset.g;genChips.querySelectorAll(".chip").forEach(x=>x.classList.remove("on","acc"));c.classList.add("on");if(c.dataset.g==="all")c.classList.add("acc");render();});
+document.getElementById("statusSeg").querySelectorAll("button").forEach(b=>b.onclick=()=>{filters.status=b.dataset.s;document.getElementById("statusSeg").querySelectorAll("button").forEach(x=>x.classList.remove("on"));b.classList.add("on");render();});
+document.getElementById("q").addEventListener("input",e=>{filters.q=e.target.value;render();});
+document.getElementById("sizer").addEventListener("input",e=>document.documentElement.style.setProperty("--card-w",e.target.value+"px"));
+document.getElementById("addBtn").onclick=()=>{ if(mode()==="read"){ openSettings(); } else { openAdd(null); } };
+
+/* =====================================================================
+   MODAL
+   ===================================================================== */
+const overlay=document.getElementById("overlay"),mBody=document.getElementById("mBody"),mTitle=document.getElementById("mTitle"),mSub=document.getElementById("mSub");
+document.getElementById("mClose").onclick=closeModal;
+overlay.addEventListener("click",e=>{if(e.target===overlay)closeModal();});
+function closeModal(){overlay.classList.remove("on");}
+
+function openCard(dex){
+  const s=SPECIES.find(x=>x.dex===dex); const c=COLL[dex];
+  if(c){ // detail view
+    mTitle.textContent=s.name; mSub.textContent=`#${String(dex).padStart(3,"0")} · Gen ${s.gen}`;
+    const editControls = canEdit()? `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+        <button class="btn ghost" id="replaceBtn">Replace card</button>
+        <button class="btn" style="background:#8a8378" id="removeBtn">Mark as missing</button></div>`:"";
+    mBody.innerHTML=`<div class="detail"><img src="${c.img}" alt=""><div class="info"><h3>${s.name}</h3>
+      <dl><dt>Card</dt><dd>${c.cardName||"—"}</dd><dt>Set</dt><dd>${c.set||"—"} ${c.number?("· #"+c.number):""}</dd><dt>Rarity</dt><dd>${c.rarity||"—"}</dd></dl>
+      ${editControls}</div></div>`;
+    overlay.classList.add("on");
+    if(canEdit()){
+      document.getElementById("removeBtn").onclick=()=>{delete COLL[dex];scheduleSave();closeModal();render();toast(`${s.name} → missing`);};
+      document.getElementById("replaceBtn").onclick=()=>renderSearch(s);
+    }
+    return;
+  }
+  if(mode()==="read"){ openSettings(); return; }
+  renderSearch(s);
+}
+function openAdd(dex){ openCard(dex===null?-1:dex); if(dex===null) renderSearch(null); }
+
+function renderSearch(preset){
+  mTitle.textContent="Register a card"; mSub.textContent="Search a species, then pick the full art you own.";
+  mBody.innerHTML=`<div class="field-row">
+      <div class="fld grow ac"><label>Species</label><input id="spInput" placeholder="e.g. Charizard" autocomplete="off" value="${preset?preset.name:""}"><div class="ac-list" id="acList"></div></div>
+      <div class="fld"><label>Card number (optional)</label><input id="numInput" placeholder="e.g. 4" autocomplete="off" style="width:160px"></div>
+    </div><button class="btn" id="doSearch" style="margin-top:14px">Search cards</button><div id="results"></div>`;
+  overlay.classList.add("on");
+  const spInput=document.getElementById("spInput"),acList=document.getElementById("acList");
+  setTimeout(()=>spInput.focus(),50);
+  let hi=-1;
+  spInput.addEventListener("input",()=>{
+    const v=spInput.value.trim().toLowerCase(); if(!v){acList.classList.remove("on");return;}
+    const m=SPECIES.filter(s=>s.name.toLowerCase().includes(v)).slice(0,8); if(!m.length){acList.classList.remove("on");return;}
+    acList.innerHTML=m.map(s=>`<div data-name="${s.name}"><span class="acnum">#${String(s.dex).padStart(3,"0")}</span> ${s.name}</div>`).join("");
+    acList.classList.add("on");hi=-1;
+    acList.querySelectorAll("div").forEach(d=>d.onclick=()=>{spInput.value=d.dataset.name;acList.classList.remove("on");});
+  });
+  spInput.addEventListener("keydown",e=>{
+    const items=[...acList.querySelectorAll("div")];
+    if(e.key==="ArrowDown")hi=Math.min(hi+1,items.length-1);
+    else if(e.key==="ArrowUp")hi=Math.max(hi-1,0);
+    else if(e.key==="Enter"){if(hi>=0&&items[hi]){spInput.value=items[hi].dataset.name;acList.classList.remove("on");e.preventDefault();}else doSearch();return;}
+    else return;
+    items.forEach(x=>x.classList.remove("hi"));if(items[hi])items[hi].classList.add("hi");e.preventDefault();
+  });
+  document.addEventListener("click",e=>{if(!e.target.closest(".ac"))acList.classList.remove("on");});
+  document.getElementById("doSearch").onclick=doSearch;
+  document.getElementById("numInput").addEventListener("keydown",e=>{if(e.key==="Enter")doSearch();});
+  if(preset)doSearch();
+
+  async function doSearch(){
+    const name=spInput.value.trim(),number=document.getElementById("numInput").value.trim(),results=document.getElementById("results");
+    if(!name){results.innerHTML=`<div class="status-msg">Type a species name first.</div>`;return;}
+    results.innerHTML=`<div class="status-msg"><div class="spinner"></div>Searching cards…</div>`;
+    let qy=`name:"${name}"`; if(number) qy+=` number:${number}`;
+    const url=`https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(qy)}&orderBy=-set.releaseDate&pageSize=60`;
+    try{
+      const headers=TCG_API_KEY?{"X-Api-Key":TCG_API_KEY}:{};
+      const r=await fetch(url,{headers});const j=await r.json();const cards=j.data||[];
+      if(!cards.length){results.innerHTML=`<div class="status-msg">No cards found for “${name}”${number?` #${number}`:""}. Try without the number.</div>`;return;}
+      const sp=SPECIES.find(s=>s.name.toLowerCase()===name.toLowerCase())||preset; const dex=sp?sp.dex:null;
+      results.innerHTML=`<div class="results">`+cards.map((c,i)=>{const img=(c.images&&c.images.large)||c.images.small;return `<div class="res" data-i="${i}"><img loading="lazy" src="${img}"><div class="cap"><b>${c.set?c.set.name:""}</b> · #${c.number||"?"}<br>${c.rarity||""}</div></div>`;}).join("")+`</div>`;
+      results.querySelectorAll(".res").forEach(el=>el.onclick=()=>{
+        const c=cards[+el.dataset.i];
+        const targetDex=dex||(SPECIES.find(s=>s.name.toLowerCase()===(c.name||"").toLowerCase())||{}).dex;
+        if(!targetDex){toast("Couldn't match to a species.");return;}
+        COLL[targetDex]={img:(c.images&&c.images.large)||c.images.small,cardName:c.name,set:c.set?c.set.name:"",number:c.number||"",rarity:c.rarity||"",addedAt:Date.now()};
+        scheduleSave();closeModal();render();
+        const nm=(SPECIES.find(s=>s.dex===targetDex)||{}).name||c.name; toast(`Caught ${nm}! ⚡`);
+      });
+    }catch(e){ results.innerHTML=`<div class="status-msg">Couldn't reach the card database. This works once hosted on GitHub Pages (the in-app preview may block external requests).</div>`; }
+  }
+}
+
+/* =====================================================================
+   SETTINGS / CONNECT
+   ===================================================================== */
+function openSettings(){
+  const c=ghCfg();
+  mTitle.textContent="Connect to GitHub"; mSub.textContent="Your collection saves to a file in your repo. The token stays in this browser only.";
+  mBody.innerHTML=`
+    <div class="field-row">
+      <div class="fld grow"><label>Owner (your username)</label><input id="ghOwner" value="${c.owner||""}" placeholder="ashketchum"></div>
+      <div class="fld grow"><label>Repository</label><input id="ghRepo" value="${c.repo||""}" placeholder="living-dex"></div>
+    </div>
+    <div class="field-row" style="margin-top:10px">
+      <div class="fld"><label>Branch</label><input id="ghBranch" value="${c.branch||"main"}" style="width:130px"></div>
+      <div class="fld grow"><label>Data file path</label><input id="ghPath" value="${c.path||"collection.json"}"></div>
+    </div>
+    <div class="field-row" style="margin-top:10px">
+      <div class="fld grow"><label>Fine-grained personal access token</label><input id="ghToken" type="password" value="${c.token||""}" placeholder="github_pat_…"></div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+      <button class="btn" id="ghConnect">Connect & sync</button>
+      ${c.token?`<button class="btn ghost" id="ghDisconnect">Disconnect (clear token)</button>`:""}
+    </div>
+    <div class="note"><b>Make a token:</b> open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank">GitHub → Fine-grained tokens</a> → <b>Repository access</b>: only your collection repo → <b>Permissions → Contents</b>: <b>Read and write</b>. Set an expiry. Paste it above. Anyone visiting without a token can browse but can't edit.</div>
+    <ol class="steps">
+      <li>Create a repo (public is fine) and add this <code>index.html</code>.</li>
+      <li>Settings → Pages → deploy from your branch (root). That's your site URL.</li>
+      <li>Fill the fields above + token, hit <b>Connect & sync</b>. The data file is created automatically on your first save.</li>
+    </ol>`;
+  overlay.classList.add("on");
+  document.getElementById("ghConnect").onclick=async()=>{
+    const s={owner:val("ghOwner"),repo:val("ghRepo"),branch:val("ghBranch")||"main",path:val("ghPath")||"collection.json",token:val("ghToken")};
+    saveLS(LS.gh,s); closeModal();
+    await syncFromRemote(); toast(mode()==="edit"?"Connected — editing enabled":"Connected (read-only)");
+  };
+  const dc=document.getElementById("ghDisconnect"); if(dc) dc.onclick=()=>{ const s=load(LS.gh,{}); delete s.token; saveLS(LS.gh,s); closeModal(); syncFromRemote(); toast("Token cleared"); };
+  function val(id){return document.getElementById(id).value.trim();}
+}
+
+/* =====================================================================
+   BOOT + REMOTE SYNC
+   ===================================================================== */
+async function syncFromRemote(){
+  const c=ghCfg();
+  if(!(c.owner&&c.repo)){ setSync("local"); render(); return; }
+  try{
+    const g=await ghGet();
+    if(g.missing){ ghSha=null; COLL={}; }
+    else { ghSha=g.sha; COLL=g.content||{}; }
+    saveLS(LS.cache,COLL);
+    setSync(c.token?"idle":"read");
+  }catch(e){ setSync("error", e.auth?"Token rejected":"Can't reach GitHub"); }
+  render();
+}
+let toastTimer; function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("on"),2200);}
+
+document.documentElement.style.setProperty("--card-w","180px");
+(async()=>{
+  render();                 // cached collection, instantly
+  await loadSpecies(); render();
+  await syncFromRemote();   // pull latest from GitHub if configured
+})();
+</script>
+</body>
+</html>
