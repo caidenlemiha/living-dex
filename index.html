@@ -204,7 +204,12 @@ const GH_DEFAULTS = {
   branch: "main",
   path:   "collection.json",
 };
-const TCG_API_KEY = "";       // optional pokemontcg.io key (works without)
+const DEFAULT_LANG = "en";    // card-art language: en, ja, zh-tw, zh-cn, ko, fr, de, es, it, pt
+const TCG_LANGS = [           // shown in the language picker when registering a card
+  ["en","English"],["ja","日本語 Japanese"],["zh-tw","繁體中文 Chinese (Trad.)"],
+  ["zh-cn","简体中文 Chinese (Simp.)"],["ko","한국어 Korean"],["fr","Français"],
+  ["de","Deutsch"],["es","Español"],["it","Italiano"],["pt","Português"]
+];
 
 /* ---------- Generations by National Dex number ---------- */
 const GENS=[
@@ -381,10 +386,12 @@ function openCard(dex){
 function openAdd(dex){ openCard(dex===null?-1:dex); if(dex===null) renderSearch(null); }
 
 function renderSearch(preset){
-  mTitle.textContent="Register a card"; mSub.textContent="Search a species, then pick the full art you own.";
+  mTitle.textContent="Register a card"; mSub.textContent="Pick a language, search a species, then choose the full art you own.";
+  const langOpts=TCG_LANGS.map(([v,l])=>`<option value="${v}"${v===DEFAULT_LANG?" selected":""}>${l}</option>`).join("");
   mBody.innerHTML=`<div class="field-row">
       <div class="fld grow ac"><label>Species</label><input id="spInput" placeholder="e.g. Charizard" autocomplete="off" value="${preset?preset.name:""}"><div class="ac-list" id="acList"></div></div>
-      <div class="fld"><label>Card number (optional)</label><input id="numInput" placeholder="e.g. 4" autocomplete="off" style="width:160px"></div>
+      <div class="fld"><label>Card number (optional)</label><input id="numInput" placeholder="e.g. 4" autocomplete="off" style="width:120px"></div>
+      <div class="fld"><label>Card language</label><select id="langSel" style="padding:11px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;outline:none">${langOpts}</select></div>
     </div><button class="btn" id="doSearch" style="margin-top:14px">Search cards</button><div id="results"></div>`;
   overlay.classList.add("on");
   const spInput=document.getElementById("spInput"),acList=document.getElementById("acList");
@@ -411,27 +418,38 @@ function renderSearch(preset){
   if(preset)doSearch();
 
   async function doSearch(){
-    const name=spInput.value.trim(),number=document.getElementById("numInput").value.trim(),results=document.getElementById("results");
+    const name=spInput.value.trim(),number=document.getElementById("numInput").value.trim();
+    const lang=document.getElementById("langSel").value, results=document.getElementById("results");
     if(!name){results.innerHTML=`<div class="status-msg">Type a species name first.</div>`;return;}
     results.innerHTML=`<div class="status-msg"><div class="spinner"></div>Searching cards…</div>`;
-    let qy=`name:"${name}"`; if(number) qy+=` number:${number}`;
-    const url=`https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(qy)}&orderBy=-set.releaseDate&pageSize=60`;
+    // Resolve species -> national dex number (language-independent search)
+    const sp=SPECIES.find(s=>s.name.toLowerCase()===name.toLowerCase())||preset;
+    const dex=sp?sp.dex:null;
+    const base=`https://api.tcgdex.net/v2/${lang}/cards`;
+    let url = dex ? `${base}?dexId=${dex}` : `${base}?name=${encodeURIComponent(name)}`;
+    if(number) url += `&localId=${encodeURIComponent(number)}`;
     try{
-      const headers=TCG_API_KEY?{"X-Api-Key":TCG_API_KEY}:{};
-      const r=await fetch(url,{headers});const j=await r.json();const cards=j.data||[];
-      if(!cards.length){results.innerHTML=`<div class="status-msg">No cards found for “${name}”${number?` #${number}`:""}. Try without the number.</div>`;return;}
-      const sp=SPECIES.find(s=>s.name.toLowerCase()===name.toLowerCase())||preset; const dex=sp?sp.dex:null;
-      results.innerHTML=`<div class="results">`+cards.map((c,i)=>{const img=(c.images&&c.images.large)||c.images.small;return `<div class="res" data-i="${i}"><img loading="lazy" src="${img}"><div class="cap"><b>${c.set?c.set.name:""}</b> · #${c.number||"?"}<br>${c.rarity||""}</div></div>`;}).join("")+`</div>`;
-      results.querySelectorAll(".res").forEach(el=>el.onclick=()=>{
+      const r=await fetch(url); const data=await r.json();
+      const cards=(Array.isArray(data)?data:[]).filter(c=>c&&c.image);  // skip cards without art
+      if(!cards.length){results.innerHTML=`<div class="status-msg">No ${labelFor(lang)} cards found for “${name}”${number?` #${number}`:""}. Try another language or drop the number.</div>`;return;}
+      const targetDex=dex||(sp?sp.dex:null);
+      results.innerHTML=`<div class="results">`+cards.map((c,i)=>{
+        const img=c.image+"/high.webp"; const setHint=c.id.includes("-")?c.id.slice(0,c.id.lastIndexOf("-")):c.id;
+        return `<div class="res" data-i="${i}"><img loading="lazy" src="${img}"><div class="cap"><b>${c.name||""}</b> · #${c.localId||"?"}<br>${setHint}</div></div>`;
+      }).join("")+`</div>`;
+      results.querySelectorAll(".res").forEach(el=>el.onclick=async()=>{
         const c=cards[+el.dataset.i];
-        const targetDex=dex||(SPECIES.find(s=>s.name.toLowerCase()===(c.name||"").toLowerCase())||{}).dex;
-        if(!targetDex){toast("Couldn't match to a species.");return;}
-        COLL[targetDex]={img:(c.images&&c.images.large)||c.images.small,cardName:c.name,set:c.set?c.set.name:"",number:c.number||"",rarity:c.rarity||"",addedAt:Date.now()};
+        const td=targetDex||(SPECIES.find(s=>s.name.toLowerCase()===(c.name||"").toLowerCase())||{}).dex;
+        if(!td){toast("Couldn't match to a species.");return;}
+        let setName="",rarity="";
+        try{ const dr=await fetch(`${base}/${c.id}`); const d=await dr.json(); setName=(d.set&&d.set.name)||""; rarity=d.rarity||""; }catch{}
+        COLL[td]={img:c.image+"/high.webp",cardName:c.name||"",set:setName,number:c.localId||"",rarity,lang,addedAt:Date.now()};
         scheduleSave();closeModal();render();
-        const nm=(SPECIES.find(s=>s.dex===targetDex)||{}).name||c.name; toast(`Caught ${nm}! ⚡`);
+        const nm=(SPECIES.find(s=>s.dex===td)||{}).name||c.name; toast(`Caught ${nm}! ⚡`);
       });
     }catch(e){ results.innerHTML=`<div class="status-msg">Couldn't reach the card database. This works once hosted on GitHub Pages (the in-app preview may block external requests).</div>`; }
   }
+  function labelFor(code){ const m=TCG_LANGS.find(x=>x[0]===code); return m?m[1].replace(/^[^ ]+ /,"").replace(/[（(].*/,"")||m[1]:code; }
 }
 
 /* =====================================================================
