@@ -95,5 +95,14 @@
     "rarity": "Illustration rare",
     "lang": "en",
     "addedAt": 1780506451599
+  },
+  "831": {
+    "img": "https://assets.tcgdex.net/en/sv/sv09/170/high.webp",
+    "cardName": "Hop's Wooloo",
+    "set": "Journey Together",
+    "number": "170",
+    "rarity": "Illustration rare",
+    "lang": "en",
+    "addedAt": 1780506568846
   }
 }
