@@ -32,5 +32,14 @@
     "rarity": "Ultra Rare",
     "lang": "en",
     "addedAt": 1779996434839
+  },
+  "714": {
+    "img": "https://assets.tcgdex.net/ja/SV/SV9/111/high.webp",
+    "cardName": "オンバット",
+    "set": "バトルパートナーズ",
+    "number": "111",
+    "rarity": "None",
+    "lang": "ja",
+    "addedAt": 1780504626290
   }
 }
