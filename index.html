@@ -425,10 +425,10 @@ function renderSearch(preset){
     // Resolve species -> national dex number (language-independent search)
     const sp=SPECIES.find(s=>s.name.toLowerCase()===name.toLowerCase())||preset;
     const dex=sp?sp.dex:null;
-    const base=`https://api.tcgdex.net/v2/${lang}/cards`;
-    // Don't include localId in the API query — the filter is unreliable for ja/zh-cn/zh-tw;
-    // fetch all cards for the species and filter by number client-side instead.
-    let url = dex ? `${base}?dexId=${dex}` : `${base}?name=${encodeURIComponent(name)}`;
+    const base=`https://api.tcgdex.net/v2/${lang}`;
+    // Use /dex-ids/{id} (path-based, exact match) rather than ?dexId= query param which does
+    // substring matching and returns wrong results (e.g. dexId=94 also returns dex 194).
+    let url = dex ? `${base}/dex-ids/${dex}` : `${base}/cards?name=${encodeURIComponent(name)}`;
     try{
       const r=await fetch(url); const data=await r.json();
       let cards=(Array.isArray(data)?data:[]).filter(c=>c&&c.image);  // skip cards without art
@@ -443,7 +443,7 @@ function renderSearch(preset){
         const c=cards[+el.dataset.i];
         // The brief list item has no dexIds — only the full card does — so fetch it first.
         let setName="",rarity="",dexIds=[];
-        try{ const dr=await fetch(`${base}/${c.id}`); const d=await dr.json(); setName=(d.set&&d.set.name)||""; rarity=d.rarity||""; dexIds=Array.isArray(d.dexIds)?d.dexIds:[]; }catch{}
+        try{ const dr=await fetch(`${base}/cards/${c.id}`); const d=await dr.json(); setName=(d.set&&d.set.name)||""; rarity=d.rarity||""; dexIds=Array.isArray(d.dexIds)?d.dexIds:[]; }catch{}
         // Prefer the slot we opened (targetDex); otherwise use the card's own national dex id.
         // English-name matching is avoided because it breaks for ja/zh-cn/zh-tw card names.
         const td=targetDex||dexIds[0]||null;
