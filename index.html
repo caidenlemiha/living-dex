@@ -205,6 +205,10 @@ const GH_DEFAULTS = {
   path:   "collection.json",
 };
 const DEFAULT_LANG = "en";    // card-art language: en, ja, zh-tw, zh-cn, ko, fr, de, es, it, pt
+// TCGdex returns a base image URL (e.g. https://assets.tcgdex.net/en/base/base3/5);
+// the quality + extension are appended to it (e.g. .../high.png).
+const IMG_QUALITY = "high", IMG_EXT = "png";
+const cardImg = u => `${u}/${IMG_QUALITY}.${IMG_EXT}`;
 const TCG_LANGS = [           // shown in the language picker when registering a card
   ["en","English"],["ja","日本語 Japanese"],["zh-tw","繁體中文 Chinese (Trad.)"],
   ["zh-cn","简体中文 Chinese (Simp.)"],["ko","한국어 Korean"],["fr","Français"],
@@ -438,7 +442,7 @@ function renderSearch(preset){
       if(!cards.length){results.innerHTML=`<div class="status-msg">No ${labelFor(lang)} cards found for "${name}"${number?` #${number}`:""}. Try another language or drop the number.</div>`;return;}
       const targetDex=dex||(sp?sp.dex:null);
       results.innerHTML=`<div class="results">`+cards.map((c,i)=>{
-        const img=c.image+"/high.webp"; const setHint=c.id.includes("-")?c.id.slice(0,c.id.lastIndexOf("-")):c.id;
+        const img=cardImg(c.image); const setHint=c.id.includes("-")?c.id.slice(0,c.id.lastIndexOf("-")):c.id;
         return `<div class="res" data-i="${i}"><img loading="lazy" src="${img}"><div class="cap"><b>${c.name||""}</b> · #${c.localId||"?"}<br>${setHint}</div></div>`;
       }).join("")+`</div>`;
       results.querySelectorAll(".res").forEach(el=>el.onclick=async()=>{
@@ -450,7 +454,7 @@ function renderSearch(preset){
         // English-name matching is avoided because it breaks for ja/zh-cn/zh-tw card names.
         const td=targetDex||dexIds[0]||null;
         if(!td){toast("Couldn't match to a species.");return;}
-        COLL[td]={img:c.image+"/high.webp",cardName:c.name||"",set:setName,number:c.localId||"",rarity,lang,addedAt:Date.now()};
+        COLL[td]={img:cardImg(c.image),cardName:c.name||"",set:setName,number:c.localId||"",rarity,lang,addedAt:Date.now()};
         scheduleSave();closeModal();render();
         const nm=(SPECIES.find(s=>s.dex===td)||{}).name||c.name; toast(`Caught ${nm}! ⚡`);
       });
