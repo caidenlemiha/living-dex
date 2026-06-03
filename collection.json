@@ -68,5 +68,14 @@
     "rarity": "None",
     "lang": "ja",
     "addedAt": 1780504626290
+  },
+  "776": {
+    "img": "https://assets.tcgdex.net/en/sv/sv07/146/high.webp",
+    "cardName": "Turtonator",
+    "set": "Stellar Crown",
+    "number": "146",
+    "rarity": "Illustration rare",
+    "lang": "en",
+    "addedAt": 1780506451599
   }
 }
