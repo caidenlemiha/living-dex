@@ -170,6 +170,7 @@
 
     <div class="controls" style="margin-top:10px;">
       <div class="chips" id="genChips"></div>
+      <button class="chip" id="fullArtChip">✦ Full Art only</button>
       <div class="right-tools">
         <div class="sizer">Size <input type="range" id="sizer" min="120" max="260" value="180" step="10" /></div>
       </div>
@@ -228,7 +229,8 @@ const SEED="Bulbasaur Ivysaur Venusaur Charmander Charmeleon Charizard Squirtle 
    ===================================================================== */
 const LS={species:"pkdx_species_v2",cache:"pkdx_coll_cache_v1",gh:"pkdx_gh_v1"};
 let SPECIES=[], COLL=load(LS.cache,{}), ghSha=null;
-const filters={gen:"all",status:"all",q:""};
+const filters={gen:"all",status:"all",q:"",fullArt:false};
+const FULL_ART_RARITIES=new Set(["illustration rare","special illustration rare","ultra rare","hyper rare"]);
 function load(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
 function saveLS(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 
@@ -316,6 +318,7 @@ function visible(){
     const have=!!COLL[s.dex];
     if(filters.status==="have"&&!have) return false;
     if(filters.status==="miss"&&have) return false;
+    if(filters.fullArt&&(!have||!FULL_ART_RARITIES.has((COLL[s.dex].rarity||"").toLowerCase()))) return false;
     if(q){ const byName=s.name.toLowerCase().includes(q); const byNum=String(s.dex)===numQ||String(s.dex).padStart(3,"0").includes(numQ); if(!byName&&!byNum) return false; }
     return true;
   });
@@ -353,6 +356,8 @@ genChips.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{filters.gen=c.datas
 document.getElementById("statusSeg").querySelectorAll("button").forEach(b=>b.onclick=()=>{filters.status=b.dataset.s;document.getElementById("statusSeg").querySelectorAll("button").forEach(x=>x.classList.remove("on"));b.classList.add("on");render();});
 document.getElementById("q").addEventListener("input",e=>{filters.q=e.target.value;render();});
 document.getElementById("sizer").addEventListener("input",e=>document.documentElement.style.setProperty("--card-w",e.target.value+"px"));
+const fullArtChip=document.getElementById("fullArtChip");
+fullArtChip.onclick=()=>{filters.fullArt=!filters.fullArt;fullArtChip.classList.toggle("on",filters.fullArt);fullArtChip.classList.toggle("acc",filters.fullArt);render();};
 document.getElementById("addBtn").onclick=()=>{ if(mode()==="read"){ openSettings(); } else { openAdd(null); } };
 
 /* =====================================================================
