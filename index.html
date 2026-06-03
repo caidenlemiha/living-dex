@@ -431,7 +431,9 @@ function renderSearch(preset){
     let url = dex ? `${base}/dex-ids/${dex}` : `${base}/cards?name=${encodeURIComponent(name)}`;
     try{
       const r=await fetch(url); const data=await r.json();
-      let cards=(Array.isArray(data)?data:[]).filter(c=>c&&c.image);  // skip cards without art
+      // /dex-ids/{id} returns {name, cards:[…]}; /cards?name= returns a bare array.
+      const list=Array.isArray(data)?data:(Array.isArray(data&&data.cards)?data.cards:[]);
+      let cards=list.filter(c=>c&&c.image);  // skip cards without art
       if(number){ const norm=s=>(String(s).replace(/^0+/,"")||"0").toLowerCase(); cards=cards.filter(c=>norm(c.localId)===norm(number)); }
       if(!cards.length){results.innerHTML=`<div class="status-msg">No ${labelFor(lang)} cards found for "${name}"${number?` #${number}`:""}. Try another language or drop the number.</div>`;return;}
       const targetDex=dex||(sp?sp.dex:null);
