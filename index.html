@@ -426,12 +426,14 @@ function renderSearch(preset){
     const sp=SPECIES.find(s=>s.name.toLowerCase()===name.toLowerCase())||preset;
     const dex=sp?sp.dex:null;
     const base=`https://api.tcgdex.net/v2/${lang}/cards`;
+    // Don't include localId in the API query — the filter is unreliable for ja/zh-cn/zh-tw;
+    // fetch all cards for the species and filter by number client-side instead.
     let url = dex ? `${base}?dexId=${dex}` : `${base}?name=${encodeURIComponent(name)}`;
-    if(number) url += `&localId=${encodeURIComponent(number)}`;
     try{
       const r=await fetch(url); const data=await r.json();
-      const cards=(Array.isArray(data)?data:[]).filter(c=>c&&c.image);  // skip cards without art
-      if(!cards.length){results.innerHTML=`<div class="status-msg">No ${labelFor(lang)} cards found for “${name}”${number?` #${number}`:""}. Try another language or drop the number.</div>`;return;}
+      let cards=(Array.isArray(data)?data:[]).filter(c=>c&&c.image);  // skip cards without art
+      if(number){ const norm=s=>(String(s).replace(/^0+/,"")||"0").toLowerCase(); cards=cards.filter(c=>norm(c.localId)===norm(number)); }
+      if(!cards.length){results.innerHTML=`<div class="status-msg">No ${labelFor(lang)} cards found for "${name}"${number?` #${number}`:""}. Try another language or drop the number.</div>`;return;}
       const targetDex=dex||(sp?sp.dex:null);
       results.innerHTML=`<div class="results">`+cards.map((c,i)=>{
         const img=c.image+"/high.webp"; const setHint=c.id.includes("-")?c.id.slice(0,c.id.lastIndexOf("-")):c.id;
@@ -439,10 +441,13 @@ function renderSearch(preset){
       }).join("")+`</div>`;
       results.querySelectorAll(".res").forEach(el=>el.onclick=async()=>{
         const c=cards[+el.dataset.i];
-        const td=targetDex||(SPECIES.find(s=>s.name.toLowerCase()===(c.name||"").toLowerCase())||{}).dex;
+        // The brief list item has no dexIds — only the full card does — so fetch it first.
+        let setName="",rarity="",dexIds=[];
+        try{ const dr=await fetch(`${base}/${c.id}`); const d=await dr.json(); setName=(d.set&&d.set.name)||""; rarity=d.rarity||""; dexIds=Array.isArray(d.dexIds)?d.dexIds:[]; }catch{}
+        // Prefer the slot we opened (targetDex); otherwise use the card's own national dex id.
+        // English-name matching is avoided because it breaks for ja/zh-cn/zh-tw card names.
+        const td=targetDex||dexIds[0]||null;
         if(!td){toast("Couldn't match to a species.");return;}
-        let setName="",rarity="";
-        try{ const dr=await fetch(`${base}/${c.id}`); const d=await dr.json(); setName=(d.set&&d.set.name)||""; rarity=d.rarity||""; }catch{}
         COLL[td]={img:c.image+"/high.webp",cardName:c.name||"",set:setName,number:c.localId||"",rarity,lang,addedAt:Date.now()};
         scheduleSave();closeModal();render();
         const nm=(SPECIES.find(s=>s.dex===td)||{}).name||c.name; toast(`Caught ${nm}! ⚡`);
