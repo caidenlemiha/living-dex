@@ -1,4 +1,13 @@
 {
+  "6": {
+    "img": "https://assets.tcgdex.net/en/me/me02/109/high.webp",
+    "cardName": "Mega Charizard X ex",
+    "set": "Phantasmal Flames",
+    "number": "109",
+    "rarity": "Ultra Rare",
+    "lang": "en",
+    "addedAt": 1780506399888
+  },
   "94": {
     "img": "https://assets.tcgdex.net/en/swsh/swsh11/TG06/high.webp",
     "cardName": "Gengar",
